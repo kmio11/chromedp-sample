@@ -1,0 +1,40 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    environment:
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 7080
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "true"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7080/health/ready"]
+      interval: 15s
+      timeout: 2s
+      retries: 15
+    command: ["start-dev", "--import-realm", "--http-port", "7080", "--https-port", "7443"]
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
+    ports:
+      - "7080:7080"
+      - "7443:7443"
+    networks:
+      - local_network
+  oidc-web:
+    image: golang:1.21-alpine
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./oidc-web:/app
+    networks:
+      - local_network
+    depends_on:
+      - keycloak
+    command: sh -c "go mod download && go run ./main.go"
+
+networks:
+  local_network:
+    driver: bridge

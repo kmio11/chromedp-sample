@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .token-info {
+            word-break: break-all;
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ダッシュボード</h1>
+        <div id="userInfo">
+            <h2>ユーザー情報</h2>
+            <div id="userDetails"></div>
+        </div>
+        <div id="tokenInfo">
+            <h2>トークン情報</h2>
+            <div>
+                <h3>Access Token</h3>
+                <div id="accessToken" class="token-info"></div>
+                <h3>ID Token</h3>
+                <div id="idToken" class="token-info"></div>
+            </div>
+        </div>
+        <button id="logoutBtn">ログアウト</button>
+    </div>
+
+    <script>
+        // Check login status
+        if (!localStorage.getItem('access_token')) {
+            window.location.href = '/index.html';
+        }
+
+        // Display token information
+        document.getElementById('accessToken').textContent = localStorage.getItem('access_token');
+        document.getElementById('idToken').textContent = localStorage.getItem('id_token');
+
+        // Parse and display user info from ID token
+        const idToken = localStorage.getItem('id_token');
+        if (idToken) {
+            try {
+                const payload = JSON.parse(atob(idToken.split('.')[1]));
+                const userDetails = document.getElementById('userDetails');
+                userDetails.innerHTML = `
+                    <p>名前: ${payload.name || 'N/A'}</p>
+                    <p>メール: ${payload.email || 'N/A'}</p>
+                    <p>ユーザーID: ${payload.sub || 'N/A'}</p>
+                `;
+            } catch (e) {
+                console.error('IDトークンのパースに失敗しました:', e);
+            }
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('id_token');
+            window.location.href = '/index.html';
+        });
+    </script>
+</body>
+</html>

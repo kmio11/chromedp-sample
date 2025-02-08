@@ -12,6 +12,9 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
+const testServerUrl = "http://localhost:3000"
+const providerUrl = "http://localhost:7080/realms/realm01"
+
 var sample = flag.String("sample", "sample1", "sample")
 
 func main() {
@@ -38,6 +41,10 @@ func main() {
 		}
 	case "noHeadless":
 		if err := noHeadless(ctx); err != nil {
+			log.Fatal(err)
+		}
+	case "loginAndApi":
+		if err := loginAndApi(ctx); err != nil {
 			log.Fatal(err)
 		}
 	default:
